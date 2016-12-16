@@ -19,14 +19,6 @@ http://localhost:3000/examples/
 
 * support ie8,ie8+,chrome,firefox,safari
 
-### Keyboard
-
-
-
-## install
-
-[![rc-pagination](https://nodei.co/npm/rc-pagination.png)](https://npmjs.org/package/rc-pagination)
-
 ## Usage
 
 ```js
