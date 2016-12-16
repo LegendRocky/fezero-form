@@ -30,8 +30,10 @@
   },
   "homepage": "https://github.com/abcdef506819/fezero-form#readme",
   "dependencies": {
+    "lodash": "^4.17.2",
     "rc-tools": "^5.9.7",
     "react": "^15.4.1",
-    "react-dom": "^15.4.1"
+    "react-dom": "^15.4.1",
+    "underscore": "^1.8.3"
   }
 }
