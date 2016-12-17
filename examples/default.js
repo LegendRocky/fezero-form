@@ -7,19 +7,18 @@ import ReactiveForm from '../src';
 const App = React.createClass({
     getInitialState() {
         return {
-        current: 3,
+            current: 3,
+            data: {}
         };
     },
-    onChange(page) {
-        console.log(page);
-        this.setState({
-            current: page,
-        });
+    handleFunc(data){
+        console.log('the result', data);
+        this.setState({data});
     },
     render() {
-        const form = {
+        let form = {
             "title": '合同编号',
-            "data": [],
+            "data": this.state.data,
             "schema": [
                 {
                     name: '_id',
@@ -29,9 +28,9 @@ const App = React.createClass({
                     placeholder: '首次新增订单，合同号随机生成毋须手工输入',
                     label_col_lg: 'control-label col-lg-2',
                     required: true,
-                    disabled: function ( value, data ) {
-                        return 'disabled';
-                    }
+                    // disabled: function ( value, data ) {
+                    //     return 'disabled';
+                    // }
                 },{
                     name: '_id',
                     type: 'text',
@@ -123,7 +122,7 @@ const App = React.createClass({
                 }
             ]
         }
-        return <ReactiveForm form={form} />;
+        return <ReactiveForm form={form} onChange={this.handleFunc} />;
     },
 });
 

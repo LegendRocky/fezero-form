@@ -1,0 +1,26 @@
+{
+  "name": "fezero-form",
+  "description": "form component for react",
+  "main": "index.js",
+  "authors": [
+    "fezero"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "react-component",
+    "react-form",
+    "form"
+  ],
+  "homepage": "https://github.com/abcdef506819/fezero-form",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.1.1"
+  }
+}

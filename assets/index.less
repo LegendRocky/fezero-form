@@ -24,10 +24,50 @@ section.panel{
     }
 }
 form.fezero-form-sm{
-    width: 600px;
+    width: 800px;
 }
 header.panel-header{
     font-weight: bold;
     font-size: 24px;
     margin: 0 0 20px 20px;
+}
+div.fezero-table-body{
+}
+table.fezero-form-table{
+    min-width: 100%;
+    border: 1px solid #e9e9e9;
+    border-radius: 4px 4px 0 0;
+    border-right: 0;
+    border-bottom: 0;
+    font-size: 12px;
+    color: #666;
+    thead{
+        border-collapse: separate;
+        border-spacing: 0;
+        text-align: left;
+    }
+    tr{
+        line-height: 32px;
+    }
+    th, td{
+        border-right: 1px solid #e9e9e9;
+        border-bottom: 1px solid #e9e9e9;
+        text-align: left;
+        line-height: 32px;
+        padding: 0 8px;
+    }
+    th{
+        background: #f7f7f7;
+        font-weight: bold;
+        -webkit-transition: background .3s ease;
+        transition: background .3s ease;
+    }
+    td{
+    }
+}
+span.btn{
+    &:hover{
+        cursor: pointer;
+        color: #108ee9;
+    }
 }

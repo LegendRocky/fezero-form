@@ -1,21 +1,128 @@
+let k = 1;
 import '../assets/index.less';
 import '../assets/ant.css';
+import '../assets/iconfont.css';
+//import '../bower_components/jquery/dist/jquery.js';
 
 const _ = require('underscore');
 const React = require('react');
+const $ = require('../bower_components/jquery/dist/jquery.js');
 
 class ReactiveForm extends React.Component {
     constructor(props) {
         super(props);
         [
             'render',
-            '_renderFrom'
+            '_renderFrom',
+            '_addChild',
+            '_objectChildHandleFunc',
+            '_handleFunc'
         ].forEach((method) => this[method] = this[method].bind(this));
+    }
+    _handleFunc(evt) {
+        evt.preventDefault();
+        let data = this.props.form && this.props.form.data ? this.props.form.data : {};
+        let value = evt.target.type === 'number' ? Number(evt.target.value.trim()) : evt.target.value.trim();
+        let keys = evt.target.id.split('.');
+        if (keys.length > 1) {
+            data[keys[0]] = data[keys[0]] ? data[keys[0]] : {[keys[1]]: ''};
+            data[keys[0]][keys[1]] = value;
+            if (value == '' || !value) {
+                delete data[keys[0]][keys[1]];
+            }
+        } else {
+            data[keys[0]] = value;
+        }
+        console.log(data);
+        this.props.onChange(data);
+    }
+    _objectChildHandleFunc(evt) {
+        evt.preventDefault();
+        let form = this.props.form;
+        let id = evt.target.id;
+        let value = evt.target.type === 'number' ? Number(evt.target.value.trim()) : evt.target.value.trim();
+        let keys = _.keys(form.data[id.split('-')[0]]);
+        if (id.split('-').length == 3) {
+            form.data[id.split('-')[0]][value] = form.data[id.split('-')[0]][keys[id.split('-')[1]]];
+            delete  form.data[id.split('-')[0]][keys[id.split('-')[1]]]
+        }
+        if (id.split('-').length > 3) {
+            form.data[id.split('-')[0]][keys[id.split('-')[1]]][id.split('-')[3]] = value;
+        }
+        this.props.onChange(form.data);
+    }
+    _addChild(evt){
+        evt.preventDefault();
+        let props = this.props;
+        let form = this.props.form;
+        let itemsName = !$(evt.target).parents("div").attr("data-id") ?
+                        $(evt.target).attr("data-id") :
+                        $(evt.target).parents("div").attr("data-id");
+
+        _.map(form.schema, function (sechma) {
+            switch (sechma.formType) {
+                case 'array_object':
+                    if (sechma.name == itemsName) {
+                        let obj = _.object(_.map(sechma.options, function (option) {
+                            return option.name;
+                        }), _.map(sechma.options, function (option, index) {
+                            if (option.name == 'no') {
+                                if (!form.data[itemsName]) {
+                                    return 1;
+                                }
+
+                                let currentNo = _.map(form.data[itemsName], function (item) {
+                                    return item.no
+                                });
+
+                                return _.max(currentNo) + 1;
+                            }
+
+                            if (option.name == "status") {
+                                return 'washed'
+                            } else {
+                                return '';
+                            }
+
+                        }));
+                        let values = form.data[itemsName] ? form.data[itemsName].concat([obj]) : [obj];
+                        var data = _.extend({}, form.data, {[itemsName]: values});
+                        props.onChange(data);
+                    }
+                    break;
+                case 'array':
+                    if (sechma.name == itemsName) {
+                        let values = form.data[itemsName] ? form.data[itemsName].concat(['']) : [''];
+                        var data = _.extend({}, form.data, {[itemsName]: values});
+                        props.onChange(data);
+                    }
+                    break;
+                case 'object':
+                    if (sechma.name == itemsName) {
+                        let obj = _.object(_.map(sechma.object.objects, function (object) {
+                            return object.name;
+                        }), _.map(sechma.object.objects, function (object) {
+                            return '';
+                        }));
+                        let values = {};
+                        if (form.data[itemsName]) {
+                            values = _.extend(form.data[itemsName], {['key' + k]: obj});
+                        } else {
+                            values = {'key': obj}
+                        }
+                        var data = _.extend({}, form.data, {[itemsName]: values});
+                        props.onChange(data);
+                        k++;
+                    }
+                    break;
+            }
+        });
+
     }
     _renderFrom(schema, index) {
         const that = this;
-        const form = this.props.form;
-        const value = schema.name.split('.').length >
+        let form = this.props.form;
+        let value = schema.name.split('.').length >
                     1 &&
                     form.data[schema.name.split('.')[0]] &&
                     form.data[schema.name.split('.')[0]][schema.name.split('.')[1]] ?
@@ -37,7 +144,8 @@ class ReactiveForm extends React.Component {
                                            "function" ?
                                            schema.disabled(form.data[schema.name], form.data) :
                                            false}
-                                onChange={that.handleFunc} onBlur={that.saveProperty}
+                                onChange={that._handleFunc}
+                                onBlur={that.saveProperty}
                                 value={value}
                                 defaultValue={schema.defaultValue}
                                 placeholder={schema.placeholder} />
@@ -133,15 +241,15 @@ class ReactiveForm extends React.Component {
                             break;
                     }
                 } else {
-                    //value = form.data[schema.name];
-                    //schema.isRequired = schema.required && (!value || !value.length) ? false : true;
+                    value = form.data[schema.name];
+                    schema.isRequired = schema.required && (!value || !value.length) ? false : true;
                     return (
                         <div className="fezero-form-item ant-form-item ant-row" key={'div_array' + index}>
                             <div className="ant-col-6 fezero-form-item-label ant-form-item-label">
                                 <label htmlFor={schema.name}
                                     className={required}>{schema.label}</label></div>
                             <div className="ant-col-14">
-                                <table className="table table-bordered table-hover">
+                                <table className="fezero-form-table">
                                     <thead>
                                     <tr>
                                         <th style={{width: 10}}>
@@ -202,8 +310,8 @@ class ReactiveForm extends React.Component {
 
             case 'object':
                 var keys = form.data && form.data[schema.name] ? _.keys(form.data[schema.name]) : [];
-                //value = form.data[schema.name];
-                //schema.isRequired = schema.required && (!value || !keys.length) ? false : true;
+                value = form.data[schema.name];
+                schema.isRequired = schema.required && (!value || !keys.length) ? false : true;
                 return (
                     <div className="fezero-form-item ant-form-item ant-row" key={'div_object' + index}>
                         <div className="ant-col-6 fezero-form-item-label ant-form-item-label">
@@ -211,16 +319,15 @@ class ReactiveForm extends React.Component {
                                 className={required}>{schema.label}</label></div>
 
                         <div className="ant-col-14">
-                            <table className="table table-bordered table-hover" name={schema.name} id={schema.name}>
-                                <thead>
+                            <div className="fezero-table-body">
+                            <table className="fezero-form-table" name={schema.name} id={schema.name}>
+                                <thead className="fezero-table-thead">
                                 <tr>
                                     <th style={{width: 10}}>
                                         <div className="btn-group btn-group-xs" data-id={schema.name}>
-                                            <button type="button" className="btn btn-primary btn-lg"
-                                                data-id={schema.name} id={schema.name} onClick={that.addChild}>
-                                                    <span className="glyphicon glyphicon-plus"
-                                                        aria-hidden="true"></span>
-                                            </button>
+                                            <span className="btn" data-id={schema.name} id={schema.name} onClick={that._addChild}>
+                                                    <i className="iconfont">&#xe6cf;</i>
+                                            </span>
                                         </div>
                                     </th>
                                     { schema.object && schema.object.options ?
@@ -253,12 +360,9 @@ class ReactiveForm extends React.Component {
                                                 <td>
                                                     <div className="btn-group btn-group-xs"
                                                         id={schema.name + '-' + child_tr_index + '-object-' + key}>
-                                                        <button type="button" className="btn btn-primary btn-lg"
-                                                            id={schema.name + '-' + child_tr_index + '-object-' + key}
-                                                            onClick={that.removeChild}>
-                                                        <span className="glyphicon glyphicon-minus"
-                                                            aria-hidden="true"></span>
-                                                        </button>
+                                                        <span className="btn" data-id={schema.name} id={schema.name} onClick={that._removeChild}>
+                                                            <i className="iconfont">&#xe695;</i>
+                                                        </span>
                                                     </div>
                                                 </td>
                                                 {schema.object && schema.object.options ?
@@ -314,7 +418,7 @@ class ReactiveForm extends React.Component {
                                                                              '-' +
                                                                              opt_index}
                                                                          name={key}
-                                                                         onChange={that.objectChildHandleFunc}
+                                                                         onChange={that._objectChildHandleFunc}
                                                                          className="form-control input-sm"
                                                                          value={key}/>
                                                                  </td>
@@ -391,7 +495,7 @@ class ReactiveForm extends React.Component {
                                                                                opt.name}
                                                                          ref={opt.name}
                                                                          type={opt.type}
-                                                                         onChange={that.objectChildHandleFunc}
+                                                                         onChange={that._objectChildHandleFunc}
                                                                          className="form-control input-sm"
                                                                          value={form.data[schema.name][key][opt.name]}/>
                                                                  </td>
@@ -406,6 +510,7 @@ class ReactiveForm extends React.Component {
                                 }
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 );

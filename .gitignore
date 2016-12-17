@@ -18,6 +18,7 @@ Thumbs.db
 *.pyc
 *.pyo
 .build
+bower_components
 node_modules
 .cache
 dist
